@@ -2,6 +2,8 @@
 
 This Flask application provides an API endpoint for sending emails using multiple SMTP servers with rate limiting and session management.
 
+Client for this: [github.com/botsarefuture/email_delivery_client](https://github.com/botsarefuture/email_delivery_client)
+
 ## Installation
 
 1. Clone this repository:
