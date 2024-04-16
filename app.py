@@ -9,8 +9,7 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 # Define SMTP servers with their configurations
 smtp_servers = [
-    {"host": "smtp.example1.com", "port": 587},
-    {"host": "smtp.example2.com", "port": 587},
+    {"host": "mail.luova.club", "port": 587},
     # Add more SMTP servers if needed
 ]
 
