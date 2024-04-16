@@ -15,7 +15,7 @@ smtp_servers = [
 ]
 
 # Create SMTP connections
-smtp_connections = []
+smtp_connections = [smtplib.SMTP(server['host'], server['port']) for server in smtp_servers]
 
 # Create a dictionary to store default email configurations
 default_configs = {}
@@ -107,6 +107,11 @@ def send_email_api():
     default_configs[email] = server_index
 
     result, status_code = send_email(email_from, email_to, subject, text, html, server_index)
+
+    # Cycle to the next server
+    next_server_index = (server_index + 1) % len(smtp_connections)
+    default_configs[email] = next_server_index
+
     return jsonify(result), status_code
 
 if __name__ == '__main__':
