@@ -14,18 +14,22 @@ smtp_servers = [
 ]
 
 # Create SMTP connections
-smtp_connections = [smtplib.SMTP(server['host'], server['port']) for server in smtp_servers]
+smtp_connections = [
+    smtplib.SMTP(server["host"], server["port"]) for server in smtp_servers
+]
 
 # Create a dictionary to store default email configurations
 default_configs = {}
 
+
 # Rate limit function
 def rate_limit():
-    rate_limit.last_time = getattr(rate_limit, 'last_time', 0)
+    rate_limit.last_time = getattr(rate_limit, "last_time", 0)
     elapsed = time.time() - rate_limit.last_time
     if elapsed < 2:
         time.sleep(2 - elapsed)
     rate_limit.last_time = time.time()
+
 
 # Function to send email
 def send_email(email_from, email_to, subject, text, html, server_index):
@@ -51,15 +55,16 @@ def send_email(email_from, email_to, subject, text, html, server_index):
     except Exception as e:
         return {"error": str(e)}, 500
 
+
 # API endpoint to send email
-@app.route('/send_email', methods=['POST'])
+@app.route("/send_email", methods=["POST"])
 def send_email_api():
     data = request.json
-    email_from = data.get('email_from')
-    email_to = data.get('email_to')
-    subject = data.get('subject')
-    text = data.get('text')
-    html = data.get('html')
+    email_from = data.get("email_from")
+    email_to = data.get("email_to")
+    subject = data.get("subject")
+    text = data.get("text")
+    html = data.get("html")
 
     if not all([email_from, email_to, subject]):
         return jsonify({"error": "Missing required fields"}), 400
@@ -67,27 +72,27 @@ def send_email_api():
     if not text and not html:
         return jsonify({"error": "No email content provided"}), 400
 
-    if 'email' in session and 'password' in session:
-        email = session['email']
-        password = session['password']
+    if "email" in session and "password" in session:
+        email = session["email"]
+        password = session["password"]
         server_index = default_configs.get(email)
         if server_index is None:
             return jsonify({"error": "Default email configuration not found"}), 400
     else:
-        email = data.get('email')
-        password = data.get('password')
+        email = data.get("email")
+        password = data.get("password")
         server_index = None
 
     if server_index is None:
         # If default configuration is not found or not using saved configuration,
         # prompt for SMTP server details
-        smtp_index = data.get('smtp_index')
+        smtp_index = data.get("smtp_index")
         if smtp_index is None:
             return jsonify({"error": "SMTP server index not provided"}), 400
 
         smtp_server = smtp_servers[smtp_index]
-        smtp_host = smtp_server['host']
-        smtp_port = smtp_server['port']
+        smtp_host = smtp_server["host"]
+        smtp_port = smtp_server["port"]
 
         smtp_connection = smtplib.SMTP(smtp_host, smtp_port)
         smtp_connection.starttls()
@@ -101,11 +106,13 @@ def send_email_api():
 
         server_index = len(smtp_connections) - 1
 
-    session['email'] = email
-    session['password'] = password
+    session["email"] = email
+    session["password"] = password
     default_configs[email] = server_index
 
-    result, status_code = send_email(email_from, email_to, subject, text, html, server_index)
+    result, status_code = send_email(
+        email_from, email_to, subject, text, html, server_index
+    )
 
     # Cycle to the next server
     next_server_index = (server_index + 1) % len(smtp_connections)
@@ -113,5 +120,6 @@ def send_email_api():
 
     return jsonify(result), status_code
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
